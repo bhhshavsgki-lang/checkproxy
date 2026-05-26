@@ -2,17 +2,16 @@ name: Scan and Update Proxies
 
 on:
   schedule:
-    # This runs the script automatically every 3 hours. 
-    # You can change this using Cron syntax if needed.
+    # Runs automatically every 3 hours
     - cron: '0 */3 * * *'
   workflow_dispatch:
-    # This allows you to go to the "Actions" tab on GitHub and click "Run workflow" manually whenever you want.
+    # Allows you to manually trigger it anytime via the GitHub "Actions" tab
 
 jobs:
   update-proxies:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Grants permission to push the files back into your repository
+      contents: write # Crucial: Allows GitHub Actions to push changes back to your repository
 
     steps:
     - name: Checkout Repository
@@ -26,7 +25,8 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install httpx[socks]
+        # 'socksio' is absolutely required for HTTPX to handle SOCKS4/5 protocols
+        pip install httpx socksio
 
     - name: Run Proxy Checker Script
       run: python proxy_checker.py
@@ -36,10 +36,12 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         
-        # Check if files changed before trying to commit (prevents empty commit errors)
+        # Stage the updated text files
         git add socks4.txt socks5.txt
+        
+        # Check if files actually changed so it doesn't fail on an empty commit
         if git diff --staged --quiet; then
-          echo "No new changes in working proxies."
+          echo "No new changes or no working proxies found during this run."
         else
           git commit -m "Automated Update: Saved working SOCKS4 and SOCKS5 proxies"
           git push
