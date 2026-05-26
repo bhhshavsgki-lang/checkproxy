@@ -25,7 +25,7 @@ jobs:
           pip install aiohttp-socks pysocks requests
 
       - name: Run proxy validation script
-        run: python .github/scripts/validate_proxies.py
+          run: python .github/validate_proxies.py
 
       - name: Commit and push changes
         run: |
